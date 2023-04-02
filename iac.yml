@@ -1,0 +1,12 @@
+- hosts: swarm_managers[0]
+  tasks:
+    - name: Deploy network
+      import_role:
+        name: network
+    - name: Deploy nginx+php service
+      import_role:
+        name: web
+    - name: Deploy mysql service
+      import_role:
+        name: database
+      when: environ == "live" or environ == "default"

@@ -1,0 +1,33 @@
+- name: Install Docker
+  become: true
+  apt:
+    name: docker.io
+    state: present
+
+- name: Install Docker Compose
+  become: true
+  apt:
+    name: docker-compose
+    state: present
+
+- name: Create nginx+php service
+  docker_swarm_service:
+    name: "nginx_php_{{ customer }}_{{ environ }}"
+    image: "{{ app_image }}"
+    labels:
+      customer: "{{ customer }}"
+      environ: "{{ environ }}"
+    env:
+      MYSQL_HOST: "mysql_{{ customer }}"
+    publish:       
+      - published_port: "{{ web_port }}"
+        target_port: "{{ source_port }}"
+    networks:
+      - name: "{{ customer }}_{{ environ }}"
+    replicas: "{{ replicas }}"
+    reservations:
+      cpus: 0.5
+      memory: 200M
+    limits:
+      cpus: "{{ cpus }}"
+      memory: "{{ mem }}"

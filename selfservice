@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Functions
+create () {
+   echo ""
+   read -p "Enter your public docker app image: [alphaegen/swarm-demo] " app_image
+   app_image=${app_image:-alphaegen/swarm-demo}
+
+   echo ""
+   read -p "Enter the port you want to use for the webserver: [8080] " source_port
+   source_port=${source_port:-8080}
+
+   echo ""
+   read -p "Enter the port you want to use for the webserver: [80] " web_port
+   web_port=${web_port:-80}
+
+   echo ""
+   read -p "Enter the amount of replicas that you want to use for the webserver: [1] " replicas
+   replicas=${replicas:-1}
+
+   echo ""
+   read -p "Enter the amount of cpu's that you want to use for the webserver: [0.5] " cpus
+   cpus=${cpus:-0.5}
+
+   echo ""
+   read -p "Enter the amount of internal memory that you want to use for the webserver: [500M] " mem
+   mem=${mem:-500M}
+
+   echo ""
+   ansible-playbook -i inventory.yml iac.yml \
+      -e "customer=${customer}" \
+      -e "source_port=${source_port}" \
+      -e "web_port=${web_port}" \
+      -e "environ=${environ}" \
+      -e "app_image=${app_image}" \
+      -e "replicas=${replicas}" \
+      -e "cpus=${cpus}" \
+      -e "mem=${mem}"
+}
+
+delete () {
+   ssh_ip="$(grep -A 2 'swarm_managers' inventory.yml | grep -E -o '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')"
+   ssh_user="$(grep -A 3 'swarm_managers' inventory.yml | grep -o 'ansible_user: .*' | sed 's/ansible_user: //')"
+
+   echo ""
+   ssh "${ssh_user}@${ssh_ip}" "docker service rm \$(docker service ls --quiet --filter "label=customer=${customer}" --filter "label=environ=${environ}")"
+   echo ""
+   echo "Your environment was deleted!"
+}
+
+# Start of UI
+read -p "Enter you name: " customer
+
+echo ""
+PS3="Select your environment type please: "
+select environ in live test default quit
+do
+   case $environ in
+      "live")
+         break;;
+      "test")
+         break;;
+      "default")
+         break;;
+      "quit")
+         break;;
+      *)
+         echo "Ooops";;
+   esac
+done
+
+echo ""
+PS3="What do you want to do?: "
+select function in "Create environment" "Remove environment" Quit
+do
+   case $function in
+      "Create environment")
+         create
+         break;;
+      "Remove environment")
+         delete
+         break;;
+      "Quit")
+         break;;
+      *)
+         echo "Ooops";;
+   esac
+done

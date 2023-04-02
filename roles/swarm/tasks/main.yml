@@ -1,0 +1,23 @@
+---
+# tasks file for swarm
+- name: check/init swarm
+  docker_swarm:
+    state: present
+  register: __output_swarm
+  when: inventory_hostname in groups['swarm_managers'][0]
+
+- name: install manager
+  docker_swarm:
+    state: join
+    timeout: 60
+    join_token: "{{ hostvars[groups['swarm_managers'][0]]['__output_swarm']['swarm_facts']['JoinTokens']['Manager']}}"
+    remote_addrs: "{{ groups['swarm_managers'][0] }}"
+  when: inventory_hostname in groups['swarm_managers']
+
+- name: install worker
+  docker_swarm:
+    state: join
+    timeout: 60
+    join_token: "{{ hostvars[groups['swarm_managers'][0]]['__output_swarm']['swarm_facts']['JoinTokens']['Worker'] }}"
+    remote_addrs: "{{ groups['swarm_managers'][0] }}"
+  when: inventory_hostname in groups['swarm_workers']

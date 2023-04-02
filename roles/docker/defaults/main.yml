@@ -1,0 +1,11 @@
+---
+# defaults file for roles/docker
+docker_packages:
+  - docker.io
+  - docker-compose
+  - git
+packages_for_removal:
+  - containerd.io
+docker_repo: deb [arch=arm64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
+docker_repo_key: https://download.docker.com/linux/ubuntu/gpg
+docker_repo_key_id: 0EBFCD88

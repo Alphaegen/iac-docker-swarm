@@ -1,0 +1,10 @@
+- hosts: all
+  tasks:
+    - name: install docker
+      become: yes
+      import_role:
+        name: docker
+    - name: Initiate swarm
+      become: yes
+      import_role:
+        name: swarm

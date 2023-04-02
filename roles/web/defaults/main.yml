@@ -1,0 +1,10 @@
+---
+# defaults file for web
+customer: default
+environ: default
+source_port: 8080
+web_port: 80
+app_image: alphaegen/swarm-demo
+replicas: 1
+cpus: 0.5
+mem: 500M

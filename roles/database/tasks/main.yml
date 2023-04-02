@@ -1,0 +1,36 @@
+- name: Install Docker
+  become: true
+  apt:
+    name: docker.io
+    state: present
+
+- name: Install Docker Compose
+  become: true
+  apt:
+    name: docker-compose
+    state: present
+
+- name: Create named volume for database files
+  docker_volume:
+    name: mysql_data{{ customer }}_{{ environ }}
+    driver: local
+
+- name: Create MySQL service
+  docker_swarm_service:
+    name: "mysql_{{ customer }}"
+    image: mysql:latest
+    labels:
+      customer: "{{ customer }}"
+      environ: "{{ environ }}"
+    env:
+      MYSQL_ROOT_PASSWORD: your_root_password
+      MYSQL_DATABASE: your_database_name
+      MYSQL_USER: your_database_user
+      MYSQL_PASSWORD: your_database_password
+    networks: 
+      - name: "{{ customer }}_{{ environ }}"
+    mounts:
+      - type: volume
+        source: mysql_data{{ customer }}_{{ environ }}
+        target: /var/lib/mysql
+    replicas: 1
